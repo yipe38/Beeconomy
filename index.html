@@ -10,10 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Vollflächiges Spielfeld -->
   <canvas id="game"></canvas>
 
-  <!-- HUD oben -->
   <header class="hud-top">
     <div class="hud-row">
       <div class="brand">🐝 Bee Tycoon</div>
@@ -27,7 +25,6 @@
     </div>
   </header>
 
-  <!-- Widgets links (Shop) -->
   <aside class="widgets left">
     <div class="panel">
       <h2>Upgrades</h2>
@@ -41,13 +38,12 @@
     </div>
   </aside>
 
-  <!-- Widgets rechts (How-to + Log) -->
   <aside class="widgets right">
     <div class="panel">
       <h2>How to</h2>
       <ul class="howto">
         <li>Linksklick setzt eine <b>Blume</b> (limitiert je 10s).</li>
-        <li>Bienen: Hinflug → <b>5s sammeln</b> → zurück → <b>Nektar</b> abgeben.</li>
+        <li>Biene: Hinflug → <b>5s sammeln</b> → zurück → <b>Nektar</b> abgeben.</li>
         <li>Nektar wird kontinuierlich zu <b>Honig</b> verarbeitet (Kapazität beachten).</li>
       </ul>
     </div>
@@ -57,7 +53,7 @@
     </div>
   </aside>
 
-  <script type="module" src="./src/state.js"></script>
+  <!-- WICHTIG: nur dieses eine Module laden -->
   <script type="module" src="./src/game.js"></script>
 </body>
 </html>
