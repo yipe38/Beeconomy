@@ -3,45 +3,59 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bee Tycoon — Idle Clicker</title>
+  <title>Bee Tycoon — Full Viewport</title>
   <link rel="stylesheet" href="./src/styles.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <h1>🐝 Bee Tycoon</h1>
+  <!-- Vollflächiges Spielfeld -->
+  <canvas id="game"></canvas>
+
+  <!-- HUD oben -->
+  <header class="hud-top">
+    <div class="hud-row">
+      <div class="brand">🐝 Bee Tycoon</div>
       <div class="stats">
-        <span>🍯 Honig: <strong id="honey">0</strong>/<span id="capacity">50</span></span>
-        <span>🧪 Nektar-Warteschlange: <strong id="nectarQueue">0</strong></span>
-        <span>⚙️ Verarbeitung: <strong id="procRate">0.25</strong>/s</span>
-        <span>🌼 Blumen-Limit (10s): <strong id="flowerQuota">5</strong> | übrig: <strong id="flowerLeft">5</strong></span>
-        <span>🐝 Bienen: <strong id="beeCount">1</strong></span>
+        <span>🍯 <b id="honey">0</b>/<span id="capacity">50</span></span>
+        <span>🧪 Nektar: <b id="nectarQueue">0</b></span>
+        <span>⚙️ <b id="procRate">0.25</b>/s</span>
+        <span>🌼 <b id="flowerLeft">5</b>/<span id="flowerQuota">5</span> /10s</span>
+        <span>🐝 <b id="beeCount">1</b></span>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <main class="main">
-      <section class="playarea">
-        <canvas id="game"></canvas>
-        <div class="hint">Linksklick: Blume setzen (Limit pro 10s)</div>
-      </section>
+  <!-- Widgets links (Shop) -->
+  <aside class="widgets left">
+    <div class="panel">
+      <h2>Upgrades</h2>
+      <div class="shop">
+        <button id="upgSpeed" class="btn" data-key="speed">🐝 Fluggeschwindigkeit<br><small>+10% — <span data-cost="speed"></span></small></button>
+        <button id="upgCapacity" class="btn" data-key="capacity">📦 Lagerkapazität<br><small>+25 — <span data-cost="capacity"></span></small></button>
+        <button id="upgQuota" class="btn" data-key="quota">🌼 Blumen-Quota (10s)<br><small>+2 — <span data-cost="quota"></span></small></button>
+        <button id="upgBee" class="btn" data-key="bee">➕ Neue Biene<br><small>+1 — <span data-cost="bee"></span></small></button>
+        <button id="upgProcess" class="btn" data-key="process">⚙️ Verarbeitung<br><small>+0.20/s — <span data-cost="process"></span></small></button>
+      </div>
+    </div>
+  </aside>
 
-      <aside class="sidebar">
-        <h2>Upgrades</h2>
-        <div class="shop">
-          <button id="upgSpeed" class="btn" data-key="speed">🐝 Fluggeschwindigkeit<br><small>+10% (Kosten: <span data-cost="speed"></span>)</small></button>
-          <button id="upgCapacity" class="btn" data-key="capacity">📦 Lagerkapazität<br><small>+25 (Kosten: <span data-cost="capacity"></span>)</small></button>
-          <button id="upgQuota" class="btn" data-key="quota">🌼 Blumen-Quota (10s)<br><small>+2 (Kosten: <span data-cost="quota"></span>)</small></button>
-          <button id="upgBee" class="btn" data-key="bee">➕ Neue Biene<br><small>+1 Biene (Kosten: <span data-cost="bee"></span>)</small></button>
-          <button id="upgProcess" class="btn" data-key="process">⚙️ Verarbeitung<br><small>+0.20/s (Kosten: <span data-cost="process"></span>)</small></button>
-        </div>
-
-        <div class="log" id="log"></div>
-      </aside>
-    </main>
-  </div>
+  <!-- Widgets rechts (How-to + Log) -->
+  <aside class="widgets right">
+    <div class="panel">
+      <h2>How to</h2>
+      <ul class="howto">
+        <li>Linksklick setzt eine <b>Blume</b> (limitiert je 10s).</li>
+        <li>Bienen: Hinflug → <b>5s sammeln</b> → zurück → <b>Nektar</b> abgeben.</li>
+        <li>Nektar wird kontinuierlich zu <b>Honig</b> verarbeitet (Kapazität beachten).</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>Log</h2>
+      <div class="log" id="log"></div>
+    </div>
+  </aside>
 
   <script type="module" src="./src/state.js"></script>
   <script type="module" src="./src/game.js"></script>
