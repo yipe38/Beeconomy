@@ -9,6 +9,8 @@ const elCap = document.getElementById('capacity');
 const elBeeCount = document.getElementById('beeCount');
 const elFlowerQuota = document.getElementById('flowerQuota');
 const elFlowerLeft = document.getElementById('flowerLeft');
+const elNectar = document.getElementById('nectarQueue');
+const elProcRate = document.getElementById('procRate');
 
 // Shop buttons
 const btns = {
@@ -16,6 +18,7 @@ const btns = {
   capacity: document.getElementById('upgCapacity'),
   quota: document.getElementById('upgQuota'),
   bee: document.getElementById('upgBee'),
+  process: document.getElementById('upgProcess'),
 };
 
 function updateShop(){
@@ -40,6 +43,7 @@ function buy(key){
     case 'capacity': S.capacity += 25;    log('Upgrade: Lagerkapazität +25'); break;
     case 'quota':    S.flowerQuota += 2; S.flowerLeft += 2; log('Upgrade: Blumen-Quota +2 pro 10s'); break;
     case 'bee':      S.bees.push(new Bee(S.bees.length+1)); log('Neue Biene im Stock!'); break;
+    case 'process':  S.processingRate = +(S.processingRate + 0.20).toFixed(2); log('Upgrade: Verarbeitung +0.20/s'); break;
   }
   refreshHUD();
   updateShop();
@@ -51,6 +55,8 @@ function refreshHUD(){
   elBeeCount.textContent = fmt(S.bees.length);
   elFlowerQuota.textContent = fmt(S.flowerQuota);
   elFlowerLeft.textContent = fmt(S.flowerLeft);
+  elNectar.textContent = fmt(S.nectarQueue);
+  elProcRate.textContent = S.processingRate.toFixed(2);
 }
 
 // Init
@@ -86,7 +92,7 @@ function popText(text, x, y, color='#fff'){
 function nearestFlower(b){
   let best=null, bestD=1e9;
   for(const f of S.flowers){
-    if(f.harvested) continue;
+    if(!f.hasNectar) continue; // nur blühende Blume
     const d = Math.hypot(f.x-b.x, f.y-b.y);
     if(d<bestD){ best=f; bestD=d; }
   }
@@ -126,21 +132,21 @@ function updateBee(b, dt){
   }
   if(b.state==='collect'){
     if(performance.now() >= b.collectUntil){
-      if(b.target) b.target.harvested=true;
+      if(b.target){
+        // ernten -> Nektar in Queue
+        b.target.hasNectar = false;
+        b.target.regrowAt = performance.now() + S.flowerRegrowMs;
+      }
       b.state='toHive'; b.target=null;
     }
   }
   if(b.state==='toHive'){
     moveTowards(b, S.hive.x, S.hive.y, S.beeSpeed, dt);
     if(Math.hypot(S.hive.x-b.x, S.hive.y-b.y) < S.hive.r-2){
-      const add = S.nectarPerFlower;
-      const space = S.capacity - S.honey;
-      if(space>0){
-        const got = Math.min(space, add);
-        S.honey += got;
-        popText(got<add ? 'Lager voll!' : `+${got} Honig`, S.hive.x, S.hive.y-40, got<add ? '#ef4444' : '#22c55e');
-        refreshHUD(); updateShop();
-      }
+      // Nektar abgeben (nicht direkt Honig!)
+      S.nectarQueue += S.nectarPerFlower;
+      popText('+Nektar', S.hive.x, S.hive.y-40, '#60a5fa');
+      refreshHUD(); updateShop();
       b.state='idle';
     }
   }
@@ -151,12 +157,15 @@ let last = performance.now();
 function loop(now){
   const dt = (now-last)/1000; last=now;
   tickQuota(now);
+  tickRegrow(now);
+  tickProcessing(dt);
   update(dt);
   draw();
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
 
+// 10s-Quota für Blumen
 function tickQuota(now){
   if(now - S.lastQuotaReset >= 10_000){
     S.flowerLeft = S.flowerQuota;
@@ -166,9 +175,30 @@ function tickQuota(now){
   }
 }
 
+// Respawn von Blumen
+function tickRegrow(now){
+  for(const f of S.flowers){
+    if(!f.hasNectar && now >= f.regrowAt){
+      f.hasNectar = true;
+      popText('🌼 Blume ist nachgewachsen', f.x, f.y-14, '#a7f3d0');
+    }
+  }
+}
+
+// Verarbeitung: Nektar -> Honig (bis Kapazität)
+function tickProcessing(dt){
+  if(S.nectarQueue <= 0 || S.honey >= S.capacity) return;
+  const canMake = S.processingRate * dt;
+  const free = S.capacity - S.honey;
+  const made = Math.min(canMake, S.nectarQueue, free);
+  S.nectarQueue -= made;
+  S.honey += made;
+  refreshHUD();
+  updateShop();
+}
+
 function update(dt){
   for(const b of S.bees) updateBee(b, dt);
-  S.flowers = S.flowers.filter(f=>!f.harvested);
   particles.forEach(p=>{ p.y += p.vy*dt; p.life -= dt; });
   particles = particles.filter(p=>p.life>0);
 }
@@ -186,7 +216,13 @@ function draw(){
   ctx.globalAlpha=1;
 
   drawHive(S.hive.x,S.hive.y,S.hive.r);
-  for(const f of S.flowers) drawFlower(f.x,f.y,f.r);
+
+  // Blumen (grau wenn leer)
+  for(const f of S.flowers){
+    drawFlower(f.x,f.y,f.r, f.hasNectar);
+  }
+
+  // Bienen
   for(const b of S.bees){
     drawBee(b.x,b.y);
     if(b.state==='collect'){
@@ -194,6 +230,8 @@ function draw(){
       drawRing(b.x, b.y, 12, 16, '#ffd166', 1-left);
     }
   }
+
+  // Partikel
   for(const p of particles){
     ctx.globalAlpha = Math.max(0,p.life);
     ctx.font = 'bold 14px Inter, sans-serif';
@@ -216,18 +254,26 @@ function drawHive(x,y,r){
   ctx.closePath(); ctx.fill(); ctx.stroke();
   ctx.fillStyle='#1f2937'; ctx.beginPath(); ctx.arc(x+r*0.4, y+2, r*0.35, 0, Math.PI*2); ctx.fill();
 }
-function drawFlower(x,y,r){
-  ctx.strokeStyle='#166534'; ctx.lineWidth=3;
+
+function drawFlower(x,y,r,hasNectar=true){
+  // stem
+  ctx.strokeStyle='#166534';
+  ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+16); ctx.stroke();
-  ctx.fillStyle='#fda4af';
+
+  // petals
+  ctx.fillStyle = hasNectar ? '#fda4af' : '#6b7280';
   for(let i=0;i<6;i++){
     const a = (Math.PI*2/6)*i;
     const px = x + Math.cos(a)*r;
     const py = y + Math.sin(a)*r;
     ctx.beginPath(); ctx.arc(px,py, r*0.7, 0, Math.PI*2); ctx.fill();
   }
-  ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(x,y, r*0.8, 0, Math.PI*2); ctx.fill();
+  // center
+  ctx.fillStyle = hasNectar ? '#f59e0b' : '#4b5563';
+  ctx.beginPath(); ctx.arc(x,y, r*0.8, 0, Math.PI*2); ctx.fill();
 }
+
 function drawBee(x,y){
   ctx.fillStyle='#fbbf24';
   ctx.beginPath(); ctx.ellipse(x,y,8,6,0,0,Math.PI*2); ctx.fill();
@@ -241,6 +287,7 @@ function drawBee(x,y){
   ctx.fillStyle='#111827';
   ctx.beginPath(); ctx.arc(x+5,y-1,1.5,0,Math.PI*2); ctx.fill();
 }
+
 function drawRing(x,y, r1, r2, color, t){
   ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=r2-r1;
   ctx.beginPath(); ctx.arc(x,y,(r1+r2)/2, -Math.PI/2, -Math.PI/2 + t*Math.PI*2); ctx.stroke(); ctx.restore();
