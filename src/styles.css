@@ -1,90 +1,37 @@
-:root{
-  --bg: #0e0f14;
-  --panel: #141827e6;   /* leicht transparent */
-  --panel-border: #23283a;
-  --ink: #e8ecf1;
-  --muted: #98a2b3;
-}
-*{ box-sizing: border-box }
-html,body{
-  margin:0; padding:0; height:100%; width:100%;
-  background: var(--bg);
-  color:var(--ink);
-  font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  overflow: hidden; /* keine Scrollbars – Canvas füllt Tab */
-}
+:root{ --bg:#0e0f14; --panel:#141827e6; --panel-border:#23283a; --ink:#e8ecf1; --muted:#98a2b3; }
+*{ box-sizing:border-box }
+html,body{ margin:0; padding:0; height:100%; width:100%; background:var(--bg); color:var(--ink); font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif; overflow:hidden; }
 
-/* Vollflächiger Canvas */
+/* Full-Tab-Canvas */
 #game{
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  display:block;
-  background:
-    radial-gradient(1200px 600px at 60% -20%, #1b2131 0%, transparent 70%),
-    linear-gradient(180deg,#20351f,#1a2719);
+  position:fixed; inset:0; width:100vw; height:100vh; display:block;
+  background: radial-gradient(1200px 600px at 60% -20%, #1b2131 0%, transparent 70%), linear-gradient(180deg,#20351f,#1a2719);
 }
 
-/* HUD oben */
-.hud-top{
-  position: fixed;
-  top: 12px; left: 50%; transform: translateX(-50%);
-  width: min(1200px, 92vw);
-  z-index: 5;
-}
-.hud-row{
-  display:flex; align-items:center; gap:16px; justify-content:space-between;
-  padding:10px 14px;
-  background: var(--panel);
-  border:1px solid var(--panel-border);
-  border-radius:14px;
-  backdrop-filter: blur(8px);
-}
-.brand{ font-weight:800; letter-spacing:.2px }
-.stats{ display:flex; gap:14px; color:var(--muted); font-size:14px }
-.stats b{ color:var(--ink) }
+/* Top HUD */
+.hud-top{ position:fixed; top:12px; left:50%; transform:translateX(-50%); width:min(1200px,92vw); z-index:5; }
+.hud-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px 14px; background:var(--panel); border:1px solid var(--panel-border); border-radius:14px; backdrop-filter:blur(8px); }
+.brand{ font-weight:800; }
+.stats{ display:flex; gap:14px; color:var(--muted); font-size:14px; }
+.stats b{ color:var(--ink); }
 
 /* Widgets links/rechts */
-.widgets{
-  position: fixed;
-  top: 76px; bottom: 16px;
-  width: 320px; z-index: 6;
-  display: flex; flex-direction: column; gap: 12px;
-  pointer-events: none; /* lässt Canvas-Klicks durch ... */
-}
-.widgets .panel{
-  pointer-events: auto; /* ... aber Panel ist interaktiv */
-  background: var(--panel);
-  border:1px solid var(--panel-border);
-  border-radius:16px;
-  padding:14px;
-  max-height: calc(50vh - 24px);
-  overflow:auto;
-}
-.widgets.left{ left: 16px; }
-.widgets.right{ right: 16px; }
-
+.widgets{ position:fixed; top:76px; bottom:16px; width:320px; z-index:6; display:flex; flex-direction:column; gap:12px; }
+.widgets.left{ left:16px; }
+.widgets.right{ right:16px; }
+.panel{ background:var(--panel); border:1px solid var(--panel-border); border-radius:16px; padding:14px; max-height:calc(50vh - 24px); overflow:auto; }
 .panel h2{ margin:0 0 8px 0; font-size:16px }
 .shop{ display:grid; gap:10px }
-.btn{
-  appearance:none; border:1px solid #2a3148; background:#1a1f2f; color:var(--ink);
-  padding:10px 12px; border-radius:12px; font-weight:600; text-align:left; cursor:pointer;
-  transition: transform .06s ease, border-color .2s ease, box-shadow .2s ease, opacity .2s;
-}
-.btn:hover{ transform: translateY(-1px); border-color:#3a4364; box-shadow:0 6px 20px rgba(0,0,0,.25) }
+.btn{ appearance:none; border:1px solid #2a3148; background:#1a1f2f; color:var(--ink); padding:10px 12px; border-radius:12px; font-weight:600; text-align:left; cursor:pointer; transition:transform .06s, border-color .2s, box-shadow .2s, opacity .2s; }
+.btn:hover{ transform:translateY(-1px); border-color:#3a4364; box-shadow:0 6px 20px rgba(0,0,0,.25); }
 .btn:disabled{ opacity:.5; cursor:not-allowed }
-
 .howto{ margin:0; padding-left:16px; color:#cbd5e1; font-size:14px }
 .howto li{ margin-bottom:6px }
-.log{
-  height:200px; overflow:auto; background:#0f1220; border:1px solid #23283a; border-radius:12px; padding:8px;
-  font-size:12px; color:#cbd5e1;
-}
+.log{ height:200px; overflow:auto; background:#0f1220; border:1px solid #23283a; border-radius:12px; padding:8px; font-size:12px; color:#cbd5e1; }
 
-/* Responsive: schmale Screens → Widgets stapeln unten */
-@media (max-width: 980px){
-  .widgets{ width: min(92vw, 520px); left: 50%; transform: translateX(-50%); right: auto; top: auto; bottom: 16px; }
-  .widgets.right{ display:none } /* nur eine Spalte zeigen */
-  .widgets .panel{ max-height: 42vh; }
+/* Responsive: Widgets unten stapeln */
+@media (max-width:980px){
+  .widgets{ width:min(92vw,520px); left:50%; transform:translateX(-50%); top:auto; bottom:16px; }
+  .widgets.right{ display:none; }
+  .panel{ max-height:42vh; }
 }
