@@ -92,7 +92,7 @@ function popText(text, x, y, color='#fff'){
 function nearestFlower(b){
   let best=null, bestD=1e9;
   for(const f of S.flowers){
-    if(!f.hasNectar) continue; // nur blühende Blume
+    if(!f.hasNectar) continue;
     const d = Math.hypot(f.x-b.x, f.y-b.y);
     if(d<bestD){ best=f; bestD=d; }
   }
@@ -133,7 +133,6 @@ function updateBee(b, dt){
   if(b.state==='collect'){
     if(performance.now() >= b.collectUntil){
       if(b.target){
-        // ernten -> Nektar in Queue
         b.target.hasNectar = false;
         b.target.regrowAt = performance.now() + S.flowerRegrowMs;
       }
@@ -143,7 +142,6 @@ function updateBee(b, dt){
   if(b.state==='toHive'){
     moveTowards(b, S.hive.x, S.hive.y, S.beeSpeed, dt);
     if(Math.hypot(S.hive.x-b.x, S.hive.y-b.y) < S.hive.r-2){
-      // Nektar abgeben (nicht direkt Honig!)
       S.nectarQueue += S.nectarPerFlower;
       popText('+Nektar', S.hive.x, S.hive.y-40, '#60a5fa');
       refreshHUD(); updateShop();
@@ -185,7 +183,7 @@ function tickRegrow(now){
   }
 }
 
-// Verarbeitung: Nektar -> Honig (bis Kapazität)
+// Verarbeitung: Nektar -> Honig
 function tickProcessing(dt){
   if(S.nectarQueue <= 0 || S.honey >= S.capacity) return;
   const canMake = S.processingRate * dt;
@@ -204,7 +202,12 @@ function update(dt){
 }
 
 function draw(){
-  resizeCanvasIfNeeded();
+  const resized = resizeCanvasIfNeeded();
+  if(resized && S.autoCenterHive){
+    // Stock in die Mitte des (neuen) Spielfelds setzen
+    S.hive.x = canvas.width / 2;
+    S.hive.y = canvas.height / 2;
+  }
 
   const w=canvas.width, h=canvas.height;
   ctx.clearRect(0,0,w,h);
@@ -218,9 +221,7 @@ function draw(){
   drawHive(S.hive.x,S.hive.y,S.hive.r);
 
   // Blumen (grau wenn leer)
-  for(const f of S.flowers){
-    drawFlower(f.x,f.y,f.r, f.hasNectar);
-  }
+  for(const f of S.flowers){ drawFlower(f.x,f.y,f.r, f.hasNectar); }
 
   // Bienen
   for(const b of S.bees){
@@ -256,12 +257,9 @@ function drawHive(x,y,r){
 }
 
 function drawFlower(x,y,r,hasNectar=true){
-  // stem
-  ctx.strokeStyle='#166534';
-  ctx.lineWidth=3;
+  ctx.strokeStyle='#166534'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+16); ctx.stroke();
 
-  // petals
   ctx.fillStyle = hasNectar ? '#fda4af' : '#6b7280';
   for(let i=0;i<6;i++){
     const a = (Math.PI*2/6)*i;
@@ -269,7 +267,6 @@ function drawFlower(x,y,r,hasNectar=true){
     const py = y + Math.sin(a)*r;
     ctx.beginPath(); ctx.arc(px,py, r*0.7, 0, Math.PI*2); ctx.fill();
   }
-  // center
   ctx.fillStyle = hasNectar ? '#f59e0b' : '#4b5563';
   ctx.beginPath(); ctx.arc(x,y, r*0.8, 0, Math.PI*2); ctx.fill();
 }
@@ -293,17 +290,20 @@ function drawRing(x,y, r1, r2, color, t){
   ctx.beginPath(); ctx.arc(x,y,(r1+r2)/2, -Math.PI/2, -Math.PI/2 + t*Math.PI*2); ctx.stroke(); ctx.restore();
 }
 
-// DPI-scharf zeichnen
+/* Canvas dynamisch auf Playarea-Größe + DPR setzen */
 function resizeCanvasIfNeeded(){
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const rect = canvas.getBoundingClientRect();
-  const w = Math.floor(rect.width*dpr);
-  const h = Math.floor(rect.height*dpr);
-  if(canvas.width!==w || canvas.height!==h){
-    canvas.width=w; canvas.height=h;
+  const w = Math.floor(rect.width * dpr);
+  const h = Math.floor(rect.height * dpr);
+  if(canvas.width !== w || canvas.height !== h){
+    canvas.width = w; canvas.height = h;
+    return true;
   }
+  return false;
 }
 
-// Bootstrap HUD/Shop
+window.addEventListener('resize', () => { /* trigger Neu-Layout */ });
+
 refreshHUD();
 updateShop();
