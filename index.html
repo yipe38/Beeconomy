@@ -15,6 +15,8 @@
       <h1>🐝 Bee Tycoon</h1>
       <div class="stats">
         <span>🍯 Honig: <strong id="honey">0</strong>/<span id="capacity">50</span></span>
+        <span>🧪 Nektar-Warteschlange: <strong id="nectarQueue">0</strong></span>
+        <span>⚙️ Verarbeitung: <strong id="procRate">0.25</strong>/s</span>
         <span>🌼 Blumen-Limit (10s): <strong id="flowerQuota">5</strong> | übrig: <strong id="flowerLeft">5</strong></span>
         <span>🐝 Bienen: <strong id="beeCount">1</strong></span>
       </div>
@@ -33,6 +35,7 @@
           <button id="upgCapacity" class="btn" data-key="capacity">📦 Lagerkapazität<br><small>+25 (Kosten: <span data-cost="capacity"></span>)</small></button>
           <button id="upgQuota" class="btn" data-key="quota">🌼 Blumen-Quota (10s)<br><small>+2 (Kosten: <span data-cost="quota"></span>)</small></button>
           <button id="upgBee" class="btn" data-key="bee">➕ Neue Biene<br><small>+1 Biene (Kosten: <span data-cost="bee"></span>)</small></button>
+          <button id="upgProcess" class="btn" data-key="process">⚙️ Verarbeitung<br><small>+0.20/s (Kosten: <span data-cost="process"></span>)</small></button>
         </div>
 
         <div class="log" id="log"></div>
