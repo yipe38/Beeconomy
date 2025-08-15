@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bee Tycoon — Idle Clicker</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1>🐝 Bee Tycoon</h1>
+      <div class="stats">
+        <span>🍯 Honig: <strong id="honey">0</strong>/<span id="capacity">50</span></span>
+        <span>🌼 Blumen-Limit (10s): <strong id="flowerQuota">5</strong> | übrig: <strong id="flowerLeft">5</strong></span>
+        <span>🐝 Bienen: <strong id="beeCount">1</strong></span>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="playarea">
+        <canvas id="game"></canvas>
+        <div class="hint">Linksklick: Blume setzen (Limit pro 10s)</div>
+      </section>
+
+      <aside class="sidebar">
+        <h2>Upgrades</h2>
+        <div class="shop">
+          <button id="upgSpeed" class="btn" data-key="speed">🐝 Fluggeschwindigkeit<br><small>+10% (Kosten: <span data-cost="speed"></span>)</small></button>
+          <button id="upgCapacity" class="btn" data-key="capacity">📦 Lagerkapazität<br><small>+25 (Kosten: <span data-cost="capacity"></span>)</small></button>
+          <button id="upgQuota" class="btn" data-key="quota">🌼 Blumen-Quota (10s)<br><small>+2 (Kosten: <span data-cost="quota"></span>)</small></button>
+          <button id="upgBee" class="btn" data-key="bee">➕ Neue Biene<br><small>+1 Biene (Kosten: <span data-cost="bee"></span>)</small></button>
+        </div>
+
+        <div class="log" id="log"></div>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="./src/state.js"></script>
+  <script type="module" src="./src/game.js"></script>
+</body>
+</html>
