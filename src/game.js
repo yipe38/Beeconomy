@@ -24,12 +24,12 @@ const btns = {
 function updateShop(){
   for(const key of Object.keys(btns)){
     const cost = Math.floor(S.costs[key]);
-    btns[key].querySelector('span[data-cost]').textContent = fmt(cost);
-    btns[key].disabled = S.honey < cost;
+    btns[key]?.querySelector('span[data-cost]')?.textContent = fmt(cost);
+    if(btns[key]) btns[key].disabled = S.honey < cost;
   }
 }
 for(const key of Object.keys(btns)){
-  btns[key].addEventListener('click', ()=> buy(key));
+  btns[key]?.addEventListener('click', ()=> buy(key));
 }
 
 function buy(key){
@@ -150,7 +150,7 @@ function updateBee(b, dt){
   }
 }
 
-/* ---- Loop & Canvas ---- */
+/* ---- Loop ---- */
 let last = performance.now();
 function loop(now){
   const dt = (now-last)/1000; last=now;
@@ -163,7 +163,7 @@ function loop(now){
 }
 requestAnimationFrame(loop);
 
-// 10s-Quota für Blumen
+// 10s-Quota
 function tickQuota(now){
   if(now - S.lastQuotaReset >= 10_000){
     S.flowerLeft = S.flowerQuota;
@@ -173,7 +173,7 @@ function tickQuota(now){
   }
 }
 
-// Respawn von Blumen
+// Respawn
 function tickRegrow(now){
   for(const f of S.flowers){
     if(!f.hasNectar && now >= f.regrowAt){
@@ -202,9 +202,8 @@ function update(dt){
 }
 
 function draw(){
-  const resized = resizeCanvasIfNeeded();
+  const resized = resizeCanvasToViewport();
   if(resized && S.autoCenterHive){
-    // Stock in die Mitte des (neuen) Spielfelds setzen
     S.hive.x = canvas.width / 2;
     S.hive.y = canvas.height / 2;
   }
@@ -220,10 +219,7 @@ function draw(){
 
   drawHive(S.hive.x,S.hive.y,S.hive.r);
 
-  // Blumen (grau wenn leer)
   for(const f of S.flowers){ drawFlower(f.x,f.y,f.r, f.hasNectar); }
-
-  // Bienen
   for(const b of S.bees){
     drawBee(b.x,b.y);
     if(b.state==='collect'){
@@ -290,20 +286,20 @@ function drawRing(x,y, r1, r2, color, t){
   ctx.beginPath(); ctx.arc(x,y,(r1+r2)/2, -Math.PI/2, -Math.PI/2 + t*Math.PI*2); ctx.stroke(); ctx.restore();
 }
 
-/* Canvas dynamisch auf Playarea-Größe + DPR setzen */
-function resizeCanvasIfNeeded(){
+/* Canvas 1:1 auf 100vw×100vh + DPR setzen */
+function resizeCanvasToViewport(){
   const dpr = Math.min(2, window.devicePixelRatio || 1);
-  const rect = canvas.getBoundingClientRect();
-  const w = Math.floor(rect.width * dpr);
-  const h = Math.floor(rect.height * dpr);
+  const w = Math.floor(window.innerWidth * dpr);
+  const h = Math.floor(window.innerHeight * dpr);
   if(canvas.width !== w || canvas.height !== h){
     canvas.width = w; canvas.height = h;
     return true;
   }
   return false;
 }
+window.addEventListener('resize', resizeCanvasToViewport);
 
-window.addEventListener('resize', () => { /* trigger Neu-Layout */ });
-
+// Bootstrap
+resizeCanvasToViewport();
 refreshHUD();
 updateShop();
